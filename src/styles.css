@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  color: #fff;
+  background: #010101;
+  font-family: "Inter", Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: #010101;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+  background: #010101;
+}
+
+::selection {
+  background: #ef1717;
+  color: #fff;
+}

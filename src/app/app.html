@@ -1,0 +1,157 @@
+<nav class="site-nav" [class.nav-scrolled]="isScrolled()">
+  <a class="brand-lockup" href="#top" aria-label="Mena Studios inicio">
+    <span>MENA</span>
+    <small>STUDIOS]</small>
+  </a>
+  <div class="nav-links">
+    <a href="#trabajo">Trabajo</a>
+    <a href="#servicios">Servicios</a>
+    <a href="#proceso">Proceso</a>
+    <a href="#planes">Planes</a>
+  </div>
+  <a class="nav-cta" href="mailto:kjmg2325@gmail.com">Contacto</a>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <div class="curtain curtain-left"></div>
+    <div class="curtain curtain-right"></div>
+    <div class="hero-grid"></div>
+
+    <div class="floating-notes" aria-hidden="true">
+      @for (note of notes; track note; let i = $index) {
+        <span class="note note-{{ i }}">{{ note }}</span>
+      }
+    </div>
+
+    <div class="stage-mark" aria-label="Mena Studios">
+      <div class="bracket bracket-left"></div>
+      <h1>
+        <span>MENA</span>
+        <strong>STUDIOS]</strong>
+      </h1>
+      <div class="bracket bracket-right"></div>
+    </div>
+
+    <p class="hero-copy">
+      Sitios web con direccion visual, mensaje claro y enfoque en resultados para negocios de Panama.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="mailto:kjmg2325@gmail.com">Deja tu idea</a>
+      <a class="btn btn-secondary" href="#trabajo">Ver proyectos</a>
+    </div>
+
+    <span class="scroll-cue">Scroll</span>
+  </section>
+
+  <section id="trabajo" class="section work">
+    <div class="section-heading reveal">
+      <span class="section-number">01</span>
+      <h2>Trabajo que se siente serio desde el primer vistazo.</h2>
+    </div>
+    <div class="project-grid">
+      @for (project of projects; track project.title) {
+        <article class="project-card reveal">
+          <img [src]="project.image" [alt]="project.title" />
+          <div class="project-overlay">
+            <p>{{ project.category }}</p>
+            <h3>{{ project.title }}</h3>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section id="servicios" class="section services">
+    <div class="section-heading reveal">
+      <span class="section-number">02</span>
+      <h2>Servicios para que tu negocio venda con mas confianza.</h2>
+    </div>
+    <div class="accordion reveal">
+      @for (service of services; track service.title; let i = $index) {
+        <button class="service-row" [class.open]="activeService() === i" (click)="toggleService(i)">
+          <span class="service-index">{{ (i + 1).toString().padStart(2, '0') }}</span>
+          <span class="service-title">{{ service.title }}</span>
+          <span class="service-mark">+</span>
+          <span class="service-panel">{{ service.text }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <section id="proceso" class="section process-section">
+    <div class="section-heading reveal">
+      <span class="section-number">03</span>
+      <h2>Un proceso directo, cercano y sin perder tiempo.</h2>
+    </div>
+    <div class="process-grid">
+      @for (step of process; track step[0]; let i = $index) {
+        <article class="process-card reveal">
+          <span>{{ (i + 1).toString().padStart(2, '0') }}</span>
+          <h3>{{ step[0] }}</h3>
+          <p>{{ step[1] }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="section about">
+    <div class="about-quote reveal">
+      <span class="section-number">04</span>
+      <blockquote>
+        "No construyo paginas para decorar internet. Construyo una presencia que haga que tu cliente confie antes de escribirte."
+      </blockquote>
+      <p>Kevin Mena, desarrollador web personal</p>
+    </div>
+    <div class="stats" data-stats>
+      @for (stat of stats; track stat.label) {
+        <div class="stat-card reveal">
+          <strong>{{ stat.current }}{{ stat.suffix }}</strong>
+          <span>{{ stat.label }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section id="planes" class="section plans">
+    <div class="section-heading reveal">
+      <span class="section-number">05</span>
+      <h2>Planes segun lo que necesitas mover.</h2>
+    </div>
+    <div class="plans-grid">
+      @for (plan of plans; track plan[0]) {
+        <article class="plan-card reveal">
+          <h3>{{ plan[0] }}</h3>
+          <p>{{ plan[1] }}</p>
+          <a href="mailto:kjmg2325@gmail.com">Conversar proyecto</a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="section faq">
+    <div class="section-heading reveal">
+      <span class="section-number">06</span>
+      <h2>Preguntas frecuentes.</h2>
+    </div>
+    <div class="faq-list">
+      @for (faq of faqs; track faq[0]) {
+        <article class="faq-item reveal">
+          <h3>{{ faq[0] }}</h3>
+          <p>{{ faq[1] }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="contact">
+    <span class="section-number reveal">07</span>
+    <h2 class="reveal">Tu negocio necesita una web que entre en escena.</h2>
+    <div class="contact-actions reveal">
+      <a href="mailto:kjmg2325@gmail.com">kjmg2325&#64;gmail.com</a>
+      <a href="tel:+50760326810">+507 6032-6810</a>
+      <span>Panama</span>
+    </div>
+  </section>
+</main>
