@@ -1,157 +1,64 @@
-<nav class="site-nav" [class.nav-scrolled]="isScrolled()">
-  <a class="brand-lockup" href="#top" aria-label="Mena Studios inicio">
-    <span>MENA</span>
-    <small>STUDIOS]</small>
-  </a>
+<nav class="site-nav" [class.nav-scrolled]="isScrolled()" [class.nav-visible]="navVisible()">
+  <a class="brand-lockup" href="#top" aria-label="Mena Studios inicio"><img src="assets/logo/option-2-ribbon.svg" alt="Mena Studios" /></a>
   <div class="nav-links">
-    <a href="#trabajo">Trabajo</a>
-    <a href="#servicios">Servicios</a>
-    <a href="#proceso">Proceso</a>
-    <a href="#planes">Planes</a>
+    <a href="#trabajo">{{ content().nav[0] }}</a><a href="#servicios">{{ content().nav[1] }}</a><a href="#proceso">{{ content().nav[2] }}</a><a href="#planes">{{ content().nav[3] }}</a>
   </div>
-  <a class="nav-cta" href="mailto:kjmg2325@gmail.com">Contacto</a>
+  <div class="nav-actions"><button type="button" class="language-toggle" (click)="toggleLanguage()" [attr.aria-label]="'Cambiar idioma a ' + content().switch">{{ content().switch }}</button><a class="nav-cta" href="#contacto">{{ content().contact }}</a></div>
 </nav>
 
 <main id="top">
-  <section class="hero">
-    <div class="curtain curtain-left"></div>
-    <div class="curtain curtain-right"></div>
-    <div class="hero-grid"></div>
-
-    <div class="floating-notes" aria-hidden="true">
-      @for (note of notes; track note; let i = $index) {
-        <span class="note note-{{ i }}">{{ note }}</span>
-      }
-    </div>
-
-    <div class="stage-mark" aria-label="Mena Studios">
-      <div class="bracket bracket-left"></div>
-      <h1>
-        <span>MENA</span>
-        <strong>STUDIOS]</strong>
-      </h1>
-      <div class="bracket bracket-right"></div>
-    </div>
-
-    <p class="hero-copy">
-      Sitios web con direccion visual, mensaje claro y enfoque en resultados para negocios de Panama.
-    </p>
-
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="mailto:kjmg2325@gmail.com">Deja tu idea</a>
-      <a class="btn btn-secondary" href="#trabajo">Ver proyectos</a>
-    </div>
-
-    <span class="scroll-cue">Scroll</span>
-  </section>
+  <section class="hero"><div class="hero-sticky">
+    <div class="curtain curtain-left" aria-hidden="true"></div><div class="curtain curtain-right" aria-hidden="true" (animationend)="finishCurtainOpening()"></div>
+    <div class="stage-mark" aria-label="Mena Studios"><img class="hero-logo" src="assets/logo/option-2-ribbon.svg" alt="Mena Studios" /><p class="hero-copy">{{ content().hero }}</p></div>
+    <div class="hero-actions"><button type="button" class="btn btn-primary" (click)="openContact()">{{ content().idea }}</button><a class="btn btn-secondary" href="#trabajo">{{ content().viewProjects }}</a></div>
+  </div></section>
 
   <section id="trabajo" class="section work">
-    <div class="section-heading reveal">
-      <span class="section-number">01</span>
-      <h2>Trabajo que se siente serio desde el primer vistazo.</h2>
-    </div>
-    <div class="project-grid">
-      @for (project of projects; track project.title) {
-        <article class="project-card reveal">
-          <img [src]="project.image" [alt]="project.title" />
-          <div class="project-overlay">
-            <p>{{ project.category }}</p>
-            <h3>{{ project.title }}</h3>
-          </div>
-        </article>
+    <div class="section-heading reveal"><span class="section-number">01</span><h2>{{ content().work }}</h2></div>
+    <div class="project-carousel reveal" [attr.aria-label]="content().nav[0]"><div class="project-track">
+      @for (project of content().projects; track project.title) {
+        <a class="project-card" [href]="project.image" target="_blank" rel="noopener noreferrer" [attr.aria-label]="content().viewProject + ' ' + project.title"><img [src]="project.image" [alt]="project.title" /><div class="project-overlay"><h3>{{ project.title }}</h3><p>{{ project.category }}</p></div></a>
       }
-    </div>
+    </div><div class="carousel-controls"><button type="button" class="carousel-control" [attr.aria-label]="content().previousProject" (click)="moveProjects(-1)">&larr;</button><button type="button" class="carousel-control" [attr.aria-label]="content().nextProject" (click)="moveProjects(1)">&rarr;</button></div></div>
   </section>
 
   <section id="servicios" class="section services">
-    <div class="section-heading reveal">
-      <span class="section-number">02</span>
-      <h2>Servicios para que tu negocio venda con mas confianza.</h2>
-    </div>
-    <div class="accordion reveal">
-      @for (service of services; track service.title; let i = $index) {
-        <button class="service-row" [class.open]="activeService() === i" (click)="toggleService(i)">
-          <span class="service-index">{{ (i + 1).toString().padStart(2, '0') }}</span>
-          <span class="service-title">{{ service.title }}</span>
-          <span class="service-mark">+</span>
-          <span class="service-panel">{{ service.text }}</span>
-        </button>
+    <div class="section-heading reveal"><span class="section-number">02</span><h2>{{ content().servicesHeading }}</h2></div><div class="accordion reveal">
+      @for (service of content().services; track service.title; let i = $index) {
+        <button type="button" class="service-row" [class.open]="activeService() === i" [attr.aria-expanded]="activeService() === i" (click)="toggleService(i)"><span class="service-index">{{ (i + 1).toString().padStart(2, '0') }}</span><span class="service-title">{{ service.title }}</span><span class="service-mark">+</span><span class="service-panel">{{ service.text }}</span></button>
       }
     </div>
   </section>
 
   <section id="proceso" class="section process-section">
-    <div class="section-heading reveal">
-      <span class="section-number">03</span>
-      <h2>Un proceso directo, cercano y sin perder tiempo.</h2>
-    </div>
-    <div class="process-grid">
-      @for (step of process; track step[0]; let i = $index) {
-        <article class="process-card reveal">
-          <span>{{ (i + 1).toString().padStart(2, '0') }}</span>
-          <h3>{{ step[0] }}</h3>
-          <p>{{ step[1] }}</p>
-        </article>
-      }
+    <div class="section-heading reveal"><span class="section-number">03</span><h2>{{ content().processHeading }}</h2></div><div class="process-grid">
+      @for (step of content().process; track step[0]; let i = $index) { <article class="process-card reveal"><span>{{ (i + 1).toString().padStart(2, '0') }}</span><h3>{{ step[0] }}</h3><p>{{ step[1] }}</p></article> }
     </div>
   </section>
 
-  <section class="section about">
-    <div class="about-quote reveal">
-      <span class="section-number">04</span>
-      <blockquote>
-        "No construyo paginas para decorar internet. Construyo una presencia que haga que tu cliente confie antes de escribirte."
-      </blockquote>
-      <p>Kevin Mena, desarrollador web personal</p>
-    </div>
-    <div class="stats" data-stats>
-      @for (stat of stats; track stat.label) {
-        <div class="stat-card reveal">
-          <strong>{{ stat.current }}{{ stat.suffix }}</strong>
-          <span>{{ stat.label }}</span>
-        </div>
-      }
-    </div>
-  </section>
+  <section class="section about"><div class="about-quote reveal"><span class="section-number">04</span><blockquote>{{ content().quote }}</blockquote><p>{{ content().quoteBy }}</p></div><div class="stats" data-stats>
+    @for (stat of stats; track stat.value; let i = $index) { <div class="stat-card reveal"><strong>{{ stat.current }}{{ stat.suffix }}</strong><span>{{ content().stats[i] }}</span></div> }
+  </div></section>
 
-  <section id="planes" class="section plans">
-    <div class="section-heading reveal">
-      <span class="section-number">05</span>
-      <h2>Planes segun lo que necesitas mover.</h2>
-    </div>
-    <div class="plans-grid">
-      @for (plan of plans; track plan[0]) {
-        <article class="plan-card reveal">
-          <h3>{{ plan[0] }}</h3>
-          <p>{{ plan[1] }}</p>
-          <a href="mailto:kjmg2325@gmail.com">Conversar proyecto</a>
-        </article>
-      }
-    </div>
-  </section>
+  <section id="planes" class="section plans"><div class="section-heading reveal"><span class="section-number">05</span><h2>{{ content().plansHeading }}</h2></div><div class="plans-grid">
+    @for (plan of content().plans; track plan[0]) { <article class="plan-card reveal"><h3>{{ plan[0] }}</h3><p>{{ plan[1] }}</p><button type="button" (click)="openContact(plan[0])" [attr.aria-label]="content().planLabel + ' ' + plan[0]">{{ content().planButton }}</button></article> }
+  </div></section>
 
-  <section class="section faq">
-    <div class="section-heading reveal">
-      <span class="section-number">06</span>
-      <h2>Preguntas frecuentes.</h2>
-    </div>
-    <div class="faq-list">
-      @for (faq of faqs; track faq[0]) {
-        <article class="faq-item reveal">
-          <h3>{{ faq[0] }}</h3>
-          <p>{{ faq[1] }}</p>
-        </article>
-      }
-    </div>
-  </section>
+  <section class="section faq"><div class="section-heading reveal"><span class="section-number">06</span><h2>{{ content().faqHeading }}</h2></div><div class="faq-list">
+    @for (faq of content().faqs; track faq[0]) { <article class="faq-item reveal"><h3>{{ faq[0] }}</h3><p>{{ faq[1] }}</p></article> }
+  </div></section>
 
-  <section class="contact">
-    <span class="section-number reveal">07</span>
-    <h2 class="reveal">Tu negocio necesita una web que entre en escena.</h2>
-    <div class="contact-actions reveal">
-      <a href="mailto:kjmg2325@gmail.com">kjmg2325&#64;gmail.com</a>
-      <a href="tel:+50760326810">+507 6032-6810</a>
-      <span>Panama</span>
-    </div>
+  <section id="contacto" class="contact"><span class="section-number reveal">07</span><h2 class="reveal">{{ content().contactHeading }}</h2>
+    <form #contactForm class="contact-form reveal" (submit)="$event.preventDefault(); sendEmail(contactForm, name.value, email.value, business.value, message.value)">
+      <input #name type="text" required [placeholder]="content().formName" [attr.aria-label]="content().formName" />
+      <input #email type="email" required [placeholder]="content().formEmail" [attr.aria-label]="content().formEmail" />
+      <input #business type="text" required [placeholder]="content().formBusiness" [attr.aria-label]="content().formBusiness" />
+      @if (selectedPlan()) { <p class="selected-plan">{{ content().formPlan }}: {{ selectedPlan() }}</p> }
+      <textarea #message required rows="5" [placeholder]="content().formMessage" [attr.aria-label]="content().formMessage"></textarea>
+      <button type="submit" [disabled]="emailStatus() === 'sending'">{{ emailStatus() === 'sending' ? content().formSending : content().formSend }}</button>
+      @if (emailStatus() === 'success') { <p class="form-status" role="status">{{ content().formSuccess }}</p> }
+      @if (emailStatus() === 'error') { <p class="form-status form-status-error" role="alert">{{ content().formError }}</p> }
+    </form>
+    <div class="contact-actions reveal"><a href="mailto:kjmg2325@gmail.com">kjmg2325&#64;gmail.com</a><a href="tel:+50760326810">+507 6032-6810</a><span>{{ content().city }}</span></div>
   </section>
 </main>

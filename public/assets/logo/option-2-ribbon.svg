@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="240" viewBox="0 0 640 240" role="img" aria-labelledby="t d">
+<title id="t">Mena Studios — cinta continua</title><desc id="d">Una cinta forma las iniciales M y S en un solo trazo.</desc>
+<defs><filter id="s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".18"/></filter></defs>
+<path d="M37 184V63c0-20 24-29 37-14l52 62 51-62c14-16 39-6 39 15v23c0 22-18 34-48 34h-29c-29 0-47 11-47 32 0 22 20 35 50 35h83" fill="none" stroke="#FFFFFF" stroke-width="25" stroke-linecap="round" stroke-linejoin="round" filter="url(#s)"/>
+<text x="273" y="116" fill="#FFFFFF" font-family="Arial,Helvetica,sans-serif" font-size="53" font-weight="800" letter-spacing="1">MENA</text><text x="276" y="157" fill="#FFFFFF" fill-opacity=".78" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="600" letter-spacing="10">STUDIOS</text>
+</svg>
