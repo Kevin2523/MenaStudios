@@ -825,8 +825,53 @@ section[id] {
   text-transform: uppercase;
 }
 
+.contact-form button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
 .selected-plan {
   margin: 2px 0;
   color: rgba(255, 255, 255, 0.68);
   font-size: 0.78rem;
+}
+
+.form-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 0;
+  border: 1px solid rgba(68, 211, 130, 0.4);
+  border-radius: 8px;
+  background: rgba(68, 211, 130, 0.1);
+  padding: 13px 15px;
+  color: #d9ffe8;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.form-status::before {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: #44d382;
+  color: #07150d;
+  content: "✓";
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.form-status-error {
+  border-color: rgba(255, 79, 70, 0.45);
+  background: rgba(255, 79, 70, 0.11);
+  color: #ffe2df;
+}
+
+.form-status-error::before {
+  background: #ff4f46;
+  color: #fff;
+  content: "!";
 }

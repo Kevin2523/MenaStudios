@@ -82,11 +82,32 @@ export class App implements AfterViewInit {
   @HostListener('window:scroll') protected updateNav(): void { this.isScrolled.set(window.scrollY > 24); }
   protected content(): Content { return this.copy[this.language()]; }
   protected finishCurtainOpening(): void { this.curtainOpen.set(true); this.navVisible.set(true); }
-  protected toggleLanguage(): void { this.language.update((value) => value === 'es' ? 'en' : 'es'); this.activeService.set(-1); }
+  protected toggleLanguage(): void {
+    this.language.update((value) => value === 'es' ? 'en' : 'es');
+    this.activeService.set(-1);
+    setTimeout(() => this.initScrollReveal());
+  }
   protected toggleService(index: number): void { this.activeService.set(this.activeService() === index ? -1 : index); }
   protected openContact(plan?: string): void {
     this.selectedPlan.set(plan ?? '');
-    document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.goToSection('contacto');
+  }
+
+  protected goToSection(sectionId: string): void {
+    if (sectionId === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      history.replaceState(null, '', '#top');
+      return;
+    }
+
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    const target = section.querySelector<HTMLElement>('.section-heading, h2') ?? section;
+    const targetTop = target.getBoundingClientRect().top + window.scrollY;
+    const position = targetTop - (window.innerHeight - target.offsetHeight) / 2;
+    window.scrollTo({ top: Math.max(0, position), behavior: 'smooth' });
+    history.replaceState(null, '', `#${sectionId}`);
   }
 
   protected async sendEmail(form: HTMLFormElement, name: string, email: string, business: string, message: string): Promise<void> {
