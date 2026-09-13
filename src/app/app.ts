@@ -25,6 +25,8 @@ export class App implements AfterViewInit {
   protected readonly isProjectChanging = signal(false);
   private projectTouchStartX = 0;
   private projectWasSwiped = false;
+  private projectSwitchPending = false;
+  private readonly projectImageLoads = new Map<string, Promise<void>>();
 
   protected readonly copy: Record<'es' | 'en', Content> = {
     es: {
@@ -85,7 +87,7 @@ export class App implements AfterViewInit {
   protected readonly activeProject = computed(() => this.content().projects[this.activeProjectIndex()]);
 
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
-  ngAfterViewInit(): void { this.updateNav(); this.initScrollReveal(); this.initCounters(); }
+  ngAfterViewInit(): void { this.updateNav(); this.initScrollReveal(); this.initCounters(); this.preloadProjectImages(); }
   @HostListener('window:scroll') protected updateNav(): void {
     this.isScrolled.set(window.scrollY > 24);
   }
@@ -151,13 +153,18 @@ export class App implements AfterViewInit {
     }
   }
   protected moveProjects(direction: number): void {
-    if (this.isProjectChanging()) return;
-    this.isProjectChanging.set(true);
-    window.setTimeout(() => {
-      const total = this.content().projects.length;
-      this.activeProjectIndex.update((index) => (index + direction + total) % total);
-      this.isProjectChanging.set(false);
-    }, 150);
+    if (this.isProjectChanging() || this.projectSwitchPending) return;
+    const total = this.content().projects.length;
+    const nextIndex = (this.activeProjectIndex() + direction + total) % total;
+    this.projectSwitchPending = true;
+    this.loadProjectImage(this.content().projects[nextIndex].image).then(() => {
+      this.isProjectChanging.set(true);
+      window.setTimeout(() => {
+        this.activeProjectIndex.set(nextIndex);
+        this.isProjectChanging.set(false);
+        this.projectSwitchPending = false;
+      }, 150);
+    });
   }
   protected startProjectSwipe(event: TouchEvent): void {
     this.projectTouchStartX = event.touches[0]?.clientX ?? 0;
@@ -173,6 +180,22 @@ export class App implements AfterViewInit {
   }
   protected preventProjectOpen(event: MouseEvent): void {
     if (this.projectWasSwiped) event.preventDefault();
+  }
+  private preloadProjectImages(): void {
+    this.content().projects.forEach((project) => void this.loadProjectImage(project.image));
+  }
+  private loadProjectImage(source: string): Promise<void> {
+    const cached = this.projectImageLoads.get(source);
+    if (cached) return cached;
+    const image = new Image();
+    const load = new Promise<void>((resolve) => {
+      image.addEventListener('load', () => resolve(), { once: true });
+      image.addEventListener('error', () => resolve(), { once: true });
+      image.src = source;
+      if (image.complete) resolve();
+    });
+    this.projectImageLoads.set(source, load);
+    return load;
   }
   private initScrollReveal(): void {
     const items = this.elementRef.nativeElement.querySelectorAll('.reveal');
