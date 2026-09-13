@@ -7,7 +7,7 @@ type Content = {
   plansHeading: string; planButton: string; faqHeading: string; contactHeading: string; city: string;
   previousProject: string; nextProject: string; viewProject: string; planLabel: string;
   formName: string; formEmail: string; formBusiness: string; formMessage: string; formSend: string; formPlan: string; formSending: string; formSuccess: string; formError: string;
-  projects: { title: string; category: string; image: string }[];
+  projects: { title: string; category: string; image: string; url: string }[];
   services: { title: string; text: string }[];
   process: [string, string][]; plans: [string, string][]; faqs: [string, string][]; stats: string[];
 };
@@ -32,9 +32,10 @@ export class App implements AfterViewInit {
       previousProject: 'Proyecto anterior', nextProject: 'Proyecto siguiente', viewProject: 'Ver imagen ampliada de', planLabel: 'Consultar plan',
       formName: 'Tu nombre', formEmail: 'Tu correo', formBusiness: 'Nombre de tu negocio', formMessage: 'Cuéntame qué necesitas', formSend: 'Enviar consulta', formPlan: 'Plan de interés', formSending: 'Enviando...', formSuccess: 'Tu consulta fue enviada. Kevin te responderá pronto.', formError: 'No se pudo enviar la consulta. Inténtalo de nuevo.',
       projects: [
-        { title: 'An\u00edbal Rey de Corazones', category: 'Marca personal con presencia comercial', image: 'assets/images/anibal.png' },
-        { title: 'Jornada Industrial', category: 'Sitio para atraer empresas', image: 'assets/images/jornada-industrial.png' },
-        { title: 'La Casa del Jean', category: 'Escaparate digital para venta local', image: 'assets/images/casa-jean.png' },
+        { title: 'An\u00edbal Rey de Corazones', category: 'Marca personal con presencia comercial', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
+        { title: 'Jornada Industrial', category: 'Sitio para atraer empresas', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
+        { title: 'Portafolio de Kevin Mena', category: 'Portafolio profesional', image: 'assets/images/kevinmena.gif', url: 'https://kevinmena.me' },
+        { title: 'La Casa del Jean', category: 'E-commerce de moda', image: 'assets/images/casa-jean.png', url: 'https://lacasadeljean.free.nf/' },
       ],
       services: [
         { title: 'Dise\u00f1o web', text: 'Una p\u00e1gina con presencia fuerte, mensaje claro y una ruta pensada para que el visitante te contacte.' },
@@ -57,9 +58,10 @@ export class App implements AfterViewInit {
       previousProject: 'Previous project', nextProject: 'Next project', viewProject: 'View larger image of', planLabel: 'Ask about plan',
       formName: 'Your name', formEmail: 'Your email', formBusiness: 'Your business name', formMessage: 'Tell me what you need', formSend: 'Send inquiry', formPlan: 'Plan of interest', formSending: 'Sending...', formSuccess: 'Your inquiry was sent. Kevin will reply soon.', formError: 'Your inquiry could not be sent. Please try again.',
       projects: [
-        { title: 'An\u00edbal Rey de Corazones', category: 'Personal brand with commercial presence', image: 'assets/images/anibal.png' },
-        { title: 'Industrial Conference', category: 'Website designed to attract companies', image: 'assets/images/jornada-industrial.png' },
-        { title: 'La Casa del Jean', category: 'Digital showcase for local sales', image: 'assets/images/casa-jean.png' },
+        { title: 'An\u00edbal Rey de Corazones', category: 'Personal brand with commercial presence', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
+        { title: 'Industrial Conference', category: 'Website designed to attract companies', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
+        { title: 'Kevin Mena Portfolio', category: 'Professional portfolio', image: 'assets/images/kevinmena.gif', url: 'https://kevinmena.me' },
+        { title: 'La Casa del Jean', category: 'Fashion e-commerce', image: 'assets/images/casa-jean.png', url: 'https://lacasadeljean.free.nf/' },
       ],
       services: [
         { title: 'Web design', text: 'A website with a strong presence, a clear message, and a path designed for visitors to contact you.' },
@@ -79,7 +81,9 @@ export class App implements AfterViewInit {
 
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
   ngAfterViewInit(): void { this.updateNav(); this.initScrollReveal(); this.initCounters(); }
-  @HostListener('window:scroll') protected updateNav(): void { this.isScrolled.set(window.scrollY > 24); }
+  @HostListener('window:scroll') protected updateNav(): void {
+    this.isScrolled.set(window.scrollY > 24);
+  }
   protected content(): Content { return this.copy[this.language()]; }
   protected finishCurtainOpening(): void { this.curtainOpen.set(true); this.navVisible.set(true); }
   protected toggleLanguage(): void {
