@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, HostListener, signal } from '@angular/core';
 
 type Stat = { value: number; suffix: string; current: number; animated: boolean };
 type Content = {
@@ -7,7 +7,7 @@ type Content = {
   plansHeading: string; planButton: string; faqHeading: string; contactHeading: string; city: string;
   previousProject: string; nextProject: string; viewProject: string; planLabel: string;
   formName: string; formEmail: string; formBusiness: string; formMessage: string; formSend: string; formPlan: string; formSending: string; formSuccess: string; formError: string;
-  projects: { title: string; category: string; image: string; url: string }[];
+  projects: { title: string; category: string; description: string; image: string; url: string }[];
   services: { title: string; text: string }[];
   process: [string, string][]; plans: [string, string][]; faqs: [string, string][]; stats: string[];
 };
@@ -21,6 +21,10 @@ export class App implements AfterViewInit {
   protected readonly activeService = signal(0);
   protected readonly selectedPlan = signal('');
   protected readonly emailStatus = signal<'idle' | 'sending' | 'success' | 'error'>('idle');
+  protected readonly activeProjectIndex = signal(0);
+  protected readonly isProjectChanging = signal(false);
+  private projectTouchStartX = 0;
+  private projectWasSwiped = false;
 
   protected readonly copy: Record<'es' | 'en', Content> = {
     es: {
@@ -32,10 +36,10 @@ export class App implements AfterViewInit {
       previousProject: 'Proyecto anterior', nextProject: 'Proyecto siguiente', viewProject: 'Ver imagen ampliada de', planLabel: 'Consultar plan',
       formName: 'Tu nombre', formEmail: 'Tu correo', formBusiness: 'Nombre de tu negocio', formMessage: 'Cuéntame qué necesitas', formSend: 'Enviar consulta', formPlan: 'Plan de interés', formSending: 'Enviando...', formSuccess: 'Tu consulta fue enviada. Kevin te responderá pronto.', formError: 'No se pudo enviar la consulta. Inténtalo de nuevo.',
       projects: [
-        { title: 'An\u00edbal Rey de Corazones', category: 'Marca personal con presencia comercial', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
-        { title: 'Jornada Industrial', category: 'Sitio para atraer empresas', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
-        { title: 'Portafolio de Kevin Mena', category: 'Portafolio profesional', image: 'assets/images/kevinmena.gif', url: 'https://kevinmena.me' },
-        { title: 'La Casa del Jean', category: 'E-commerce de moda', image: 'assets/images/casa-jean.png', url: 'https://lacasadeljean.free.nf/' },
+        { title: 'An\u00edbal Rey de Corazones', category: 'Marca personal con presencia comercial', description: 'Una vitrina cercana para presentar sus servicios, generar confianza y facilitar el contacto directo por WhatsApp.', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
+        { title: 'Jornada Industrial', category: 'Sitio para atraer empresas', description: 'Una plataforma clara para reunir informaci\u00f3n del evento, conectar patrocinadores y aumentar las inscripciones.', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
+        { title: 'Portafolio de Kevin Mena', category: 'Portafolio profesional', description: 'Un recorrido visual que ordena proyectos y experiencia para convertir una visita en una conversaci\u00f3n de trabajo.', image: 'assets/images/portfolio-kevin.png', url: 'https://kevinmena.me' },
+        { title: 'La Casa del Jean', category: 'E-commerce de moda', description: 'Una tienda digital pensada para que los productos se vean mejor y sea m\u00e1s f\u00e1cil pasar de mirar a comprar.', image: 'assets/images/casa-jean-capture.png', url: 'https://lacasadeljean.free.nf/' },
       ],
       services: [
         { title: 'Dise\u00f1o web', text: 'Una p\u00e1gina con presencia fuerte, mensaje claro y una ruta pensada para que el visitante te contacte.' },
@@ -58,10 +62,10 @@ export class App implements AfterViewInit {
       previousProject: 'Previous project', nextProject: 'Next project', viewProject: 'View larger image of', planLabel: 'Ask about plan',
       formName: 'Your name', formEmail: 'Your email', formBusiness: 'Your business name', formMessage: 'Tell me what you need', formSend: 'Send inquiry', formPlan: 'Plan of interest', formSending: 'Sending...', formSuccess: 'Your inquiry was sent. Kevin will reply soon.', formError: 'Your inquiry could not be sent. Please try again.',
       projects: [
-        { title: 'An\u00edbal Rey de Corazones', category: 'Personal brand with commercial presence', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
-        { title: 'Industrial Conference', category: 'Website designed to attract companies', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
-        { title: 'Kevin Mena Portfolio', category: 'Professional portfolio', image: 'assets/images/kevinmena.gif', url: 'https://kevinmena.me' },
-        { title: 'La Casa del Jean', category: 'Fashion e-commerce', image: 'assets/images/casa-jean.png', url: 'https://lacasadeljean.free.nf/' },
+        { title: 'An\u00edbal Rey de Corazones', category: 'Personal brand with commercial presence', description: 'A close, trustworthy showcase for services that makes direct WhatsApp contact easier.', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
+        { title: 'Industrial Conference', category: 'Website designed to attract companies', description: 'A clear event platform that brings together information, sponsors, and registration opportunities.', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
+        { title: 'Kevin Mena Portfolio', category: 'Professional portfolio', description: 'A visual journey through work and experience designed to turn a visit into a work conversation.', image: 'assets/images/portfolio-kevin.png', url: 'https://kevinmena.me' },
+        { title: 'La Casa del Jean', category: 'Fashion e-commerce', description: 'A digital store that lets products stand out and makes the path from browsing to buying simpler.', image: 'assets/images/casa-jean-capture.png', url: 'https://lacasadeljean.free.nf/' },
       ],
       services: [
         { title: 'Web design', text: 'A website with a strong presence, a clear message, and a path designed for visitors to contact you.' },
@@ -78,6 +82,7 @@ export class App implements AfterViewInit {
   };
 
   protected readonly stats: Stat[] = [{ value: 4, suffix: '+', current: 0, animated: false }, { value: 100, suffix: '%', current: 0, animated: false }, { value: 24, suffix: 'h', current: 0, animated: false }];
+  protected readonly activeProject = computed(() => this.content().projects[this.activeProjectIndex()]);
 
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
   ngAfterViewInit(): void { this.updateNav(); this.initScrollReveal(); this.initCounters(); }
@@ -146,10 +151,28 @@ export class App implements AfterViewInit {
     }
   }
   protected moveProjects(direction: number): void {
-    const track = this.elementRef.nativeElement.querySelector<HTMLElement>('.project-track');
-    if (!track) return;
-    const card = track.querySelector<HTMLElement>('.project-card');
-    track.scrollBy({ left: direction * (card ? card.offsetWidth + 18 : track.clientWidth * 0.8), behavior: 'smooth' });
+    if (this.isProjectChanging()) return;
+    this.isProjectChanging.set(true);
+    window.setTimeout(() => {
+      const total = this.content().projects.length;
+      this.activeProjectIndex.update((index) => (index + direction + total) % total);
+      this.isProjectChanging.set(false);
+    }, 150);
+  }
+  protected startProjectSwipe(event: TouchEvent): void {
+    this.projectTouchStartX = event.touches[0]?.clientX ?? 0;
+  }
+  protected finishProjectSwipe(event: TouchEvent): void {
+    const endX = event.changedTouches[0]?.clientX ?? this.projectTouchStartX;
+    const distance = endX - this.projectTouchStartX;
+    if (Math.abs(distance) >= 42) {
+      this.projectWasSwiped = true;
+      this.moveProjects(distance < 0 ? 1 : -1);
+      window.setTimeout(() => this.projectWasSwiped = false, 350);
+    }
+  }
+  protected preventProjectOpen(event: MouseEvent): void {
+    if (this.projectWasSwiped) event.preventDefault();
   }
   private initScrollReveal(): void {
     const items = this.elementRef.nativeElement.querySelectorAll('.reveal');
