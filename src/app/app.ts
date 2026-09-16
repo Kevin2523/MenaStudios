@@ -1,124 +1,64 @@
-import { AfterViewInit, Component, computed, ElementRef, HostListener, signal } from '@angular/core';
+import { Component, HostListener, OnInit, signal } from '@angular/core';
 
-type Stat = { value: number; suffix: string; current: number; animated: boolean };
-type Content = {
-  nav: string[]; contact: string; switch: string; hero: string; idea: string; viewProjects: string;
-  work: string; servicesHeading: string; processHeading: string; quote: string; quoteBy: string;
-  plansHeading: string; planButton: string; faqHeading: string; contactHeading: string; city: string;
-  previousProject: string; nextProject: string; viewProject: string; planLabel: string;
-  formName: string; formEmail: string; formBusiness: string; formMessage: string; formSend: string; formPlan: string; formSending: string; formSuccess: string; formError: string;
-  projects: { title: string; category: string; description: string; image: string; url: string }[];
-  services: { title: string; text: string }[];
-  process: [string, string][]; plans: [string, string][]; faqs: [string, string][]; stats: string[];
-};
+type Service = { number: string; title: string; text: string };
+type Project = { category: string; title: string; image: string; url: string };
+type Step = { number: string; title: string; text: string };
 
-@Component({ selector: 'app-root', imports: [], templateUrl: './app.html', styleUrl: './app.css' })
-export class App implements AfterViewInit {
-  protected readonly language = signal<'es' | 'en'>('es');
-  protected readonly isScrolled = signal(false);
-  protected readonly navVisible = signal(false);
-  protected readonly curtainOpen = signal(false);
-  protected readonly activeService = signal(0);
-  protected readonly selectedPlan = signal('');
+@Component({
+  selector: 'app-root',
+  imports: [],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+})
+export class App implements OnInit {
+  protected readonly mobileMenuOpen = signal(false);
   protected readonly emailStatus = signal<'idle' | 'sending' | 'success' | 'error'>('idle');
-  protected readonly activeProjectIndex = signal(0);
-  protected readonly isProjectChanging = signal(false);
-  private projectTouchStartX = 0;
-  private projectWasSwiped = false;
-  private projectSwitchPending = false;
-  private readonly projectImageLoads = new Map<string, Promise<void>>();
+  protected readonly hasScrolled = signal(false);
 
-  protected readonly copy: Record<'es' | 'en', Content> = {
-    es: {
-      nav: ['Trabajo', 'Servicios', 'Proceso', 'Planes'], contact: 'Contacto', switch: 'EN',
-      hero: 'Sitios web con direcci\u00f3n visual, mensaje claro y enfoque en resultados para negocios de Panam\u00e1.', idea: 'Deja tu idea', viewProjects: 'Ver proyectos',
-      work: 'Trabajo que se siente serio desde el primer vistazo.', servicesHeading: 'Servicios para que tu negocio venda con m\u00e1s confianza.', processHeading: 'Un proceso directo, cercano y sin perder tiempo.',
-      quote: '"No construyo p\u00e1ginas para decorar internet. Construyo una presencia que haga que tu cliente conf\u00ede antes de escribirte."', quoteBy: 'Kevin Mena, desarrollador web personal',
-      plansHeading: 'Planes seg\u00fan lo que necesitas mover.', planButton: 'Conversar proyecto', faqHeading: 'Preguntas frecuentes.', contactHeading: 'Tu negocio necesita una web que entre en escena.', city: 'Panam\u00e1',
-      previousProject: 'Proyecto anterior', nextProject: 'Proyecto siguiente', viewProject: 'Ver imagen ampliada de', planLabel: 'Consultar plan',
-      formName: 'Tu nombre', formEmail: 'Tu correo', formBusiness: 'Nombre de tu negocio', formMessage: 'Cuéntame qué necesitas', formSend: 'Enviar consulta', formPlan: 'Plan de interés', formSending: 'Enviando...', formSuccess: 'Tu consulta fue enviada. Kevin te responderá pronto.', formError: 'No se pudo enviar la consulta. Inténtalo de nuevo.',
-      projects: [
-        { title: 'An\u00edbal Rey de Corazones', category: 'Marca personal con presencia comercial', description: 'Una vitrina cercana para presentar sus servicios, generar confianza y facilitar el contacto directo por WhatsApp.', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
-        { title: 'Jornada Industrial', category: 'Sitio para atraer empresas', description: 'Una plataforma clara para reunir informaci\u00f3n del evento, conectar patrocinadores y aumentar las inscripciones.', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
-        { title: 'Portafolio de Kevin Mena', category: 'Portafolio profesional', description: 'Un recorrido visual que ordena proyectos y experiencia para convertir una visita en una conversaci\u00f3n de trabajo.', image: 'assets/images/portfolio-kevin.png', url: 'https://kevinmena.me' },
-        { title: 'La Casa del Jean', category: 'E-commerce de moda', description: 'Una tienda digital pensada para que los productos se vean mejor y sea m\u00e1s f\u00e1cil pasar de mirar a comprar.', image: 'assets/images/casa-jean-capture.png', url: 'https://lacasadeljean.free.nf/' },
-      ],
-      services: [
-        { title: 'Dise\u00f1o web', text: 'Una p\u00e1gina con presencia fuerte, mensaje claro y una ruta pensada para que el visitante te contacte.' },
-        { title: 'Desarrollo a medida', text: 'Construyo la experiencia que tu negocio necesita, sin plantillas gen\u00e9ricas ni secciones de relleno.' },
-        { title: 'Tiendas online', text: 'Tu cat\u00e1logo listo para mostrar productos, recibir pedidos y dar confianza antes de la compra.' },
-        { title: 'SEO', text: 'Organizo tu web para que sea m\u00e1s f\u00e1cil encontrarte y para que cada p\u00e1gina tenga una intenci\u00f3n comercial.' },
-        { title: 'Mantenimiento', text: 'Acompa\u00f1amiento cercano para cambios, mejoras, ajustes y soporte despu\u00e9s del lanzamiento.' },
-      ],
-      process: [['Hablamos', 'Revisamos tu oferta, tu cliente y lo que debe pasar despu\u00e9s de visitar la web.'], ['Dise\u00f1o', 'Defino una direcci\u00f3n visual fuerte, clara y alineada al tipo de cliente que quieres atraer.'], ['Construyo', 'Desarrollo una p\u00e1gina r\u00e1pida, responsive y lista para convertir inter\u00e9s en contacto.'], ['Lanzamos', 'Publicamos, probamos y dejamos todo preparado para que empieces a mover tu web.']],
-      plans: [['Landing', 'Una p\u00e1gina directa para vender un servicio, promoci\u00f3n o campa\u00f1a puntual.'], ['Sitio completo', 'Una web completa para presentar tu negocio, servicios, casos y contacto.'], ['E-commerce', 'Una tienda clara para mostrar productos y abrir nuevos canales de venta.']],
-      faqs: [['\u00bfTrabajas solo con negocios de Panam\u00e1?', 'Mi enfoque principal son negocios de Panam\u00e1 porque entiendo el mercado, la forma de vender y la cercan\u00eda que esperan los clientes.'], ['\u00bfNecesito tener textos e im\u00e1genes listos?', 'No. Puedo ayudarte a ordenar el mensaje, elegir qu\u00e9 mostrar y darle forma comercial a cada secci\u00f3n.'], ['\u00bfLa web se ver\u00e1 bien en celular?', 'S\u00ed. La experiencia se piensa primero para celular, porque ah\u00ed llega gran parte del tr\u00e1fico local.'], ['\u00bfPuedes mejorar una web existente?', 'S\u00ed. Puedo redise\u00f1arla, ordenar el contenido y convertirla en una herramienta m\u00e1s seria para vender.'], ['\u00bfQu\u00e9 pasa despu\u00e9s del lanzamiento?', 'Puedes mantener soporte conmigo para cambios, mejoras, ajustes y nuevas secciones cuando las necesites.']],
-      stats: ['proyectos entregados', 'satisfacci\u00f3n buscada', 'respuesta inicial'],
-    },
-    en: {
-      nav: ['Work', 'Services', 'Process', 'Plans'], contact: 'Contact', switch: 'ES',
-      hero: 'Websites with visual direction, a clear message, and a focus on results for businesses in Panama.', idea: 'Share your idea', viewProjects: 'View projects',
-      work: 'Work that feels serious from the first look.', servicesHeading: 'Services that help your business sell with more confidence.', processHeading: 'A direct, close process with no wasted time.',
-      quote: '"I do not build pages to decorate the internet. I build a presence that makes your client trust you before they write."', quoteBy: 'Kevin Mena, personal web developer',
-      plansHeading: 'Plans based on what you need to move.', planButton: 'Discuss project', faqHeading: 'Frequently asked questions.', contactHeading: 'Your business needs a website that takes the stage.', city: 'Panama',
-      previousProject: 'Previous project', nextProject: 'Next project', viewProject: 'View larger image of', planLabel: 'Ask about plan',
-      formName: 'Your name', formEmail: 'Your email', formBusiness: 'Your business name', formMessage: 'Tell me what you need', formSend: 'Send inquiry', formPlan: 'Plan of interest', formSending: 'Sending...', formSuccess: 'Your inquiry was sent. Kevin will reply soon.', formError: 'Your inquiry could not be sent. Please try again.',
-      projects: [
-        { title: 'An\u00edbal Rey de Corazones', category: 'Personal brand with commercial presence', description: 'A close, trustworthy showcase for services that makes direct WhatsApp contact easier.', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com' },
-        { title: 'Industrial Conference', category: 'Website designed to attract companies', description: 'A clear event platform that brings together information, sponsors, and registration opportunities.', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
-        { title: 'Kevin Mena Portfolio', category: 'Professional portfolio', description: 'A visual journey through work and experience designed to turn a visit into a work conversation.', image: 'assets/images/portfolio-kevin.png', url: 'https://kevinmena.me' },
-        { title: 'La Casa del Jean', category: 'Fashion e-commerce', description: 'A digital store that lets products stand out and makes the path from browsing to buying simpler.', image: 'assets/images/casa-jean-capture.png', url: 'https://lacasadeljean.free.nf/' },
-      ],
-      services: [
-        { title: 'Web design', text: 'A website with a strong presence, a clear message, and a path designed for visitors to contact you.' },
-        { title: 'Custom development', text: 'I build the experience your business needs, without generic templates or filler sections.' },
-        { title: 'Online stores', text: 'Your catalog ready to show products, receive orders, and build confidence before a purchase.' },
-        { title: 'SEO', text: 'I organize your website so it is easier to find and every page serves a commercial purpose.' },
-        { title: 'Maintenance', text: 'Close support for changes, improvements, updates, and help after launch.' },
-      ],
-      process: [['We talk', 'We review your offer, your client, and what should happen after someone visits your website.'], ['Design', 'I define a strong, clear visual direction aligned with the clients you want to attract.'], ['I build', 'I develop a fast, responsive website ready to turn interest into contact.'], ['We launch', 'We publish, test, and leave everything ready for you to start moving your website.']],
-      plans: [['Landing page', 'A direct page to sell a service, promotion, or specific campaign.'], ['Complete website', 'A complete website to present your business, services, cases, and contact details.'], ['E-commerce', 'A clear online store to show products and open new sales channels.']],
-      faqs: [['Do you work only with businesses in Panama?', 'My main focus is businesses in Panama because I understand the market, the way they sell, and the closeness clients expect.'], ['Do I need to have text and images ready?', 'No. I can help you organize the message, choose what to show, and shape each section commercially.'], ['Will the website look good on mobile?', 'Yes. The experience is designed for mobile first, because that is where much of the local traffic arrives.'], ['Can you improve an existing website?', 'Yes. I can redesign it, organize its content, and turn it into a more serious sales tool.'], ['What happens after launch?', 'You can keep support with me for changes, improvements, adjustments, and new sections when you need them.']],
-      stats: ['projects delivered', 'target satisfaction', 'initial response'],
-    },
-  };
+  protected readonly services: Service[] = [
+    { number: '01', title: 'Diseño web', text: 'Una presencia clara y profesional que hace que tu negocio se vea a la altura de lo que ofrece.' },
+    { number: '02', title: 'Tiendas online', text: 'Una experiencia simple para mostrar productos, recibir pedidos y vender con confianza.' },
+    { number: '03', title: 'Desarrollo a medida', text: 'Soluciones pensadas alrededor de tu operación, tus clientes y la forma en que quieres crecer.' },
+    { number: '04', title: 'SEO y visibilidad', text: 'Páginas organizadas para ayudarte a aparecer cuando las personas buscan lo que haces.' },
+    { number: '05', title: 'Soporte y mantenimiento', text: 'Acompañamiento cercano para que tu sitio siga actualizado, seguro y útil después del lanzamiento.' },
+  ];
 
-  protected readonly stats: Stat[] = [{ value: 4, suffix: '+', current: 0, animated: false }, { value: 100, suffix: '%', current: 0, animated: false }, { value: 24, suffix: 'h', current: 0, animated: false }];
-  protected readonly activeProject = computed(() => this.content().projects[this.activeProjectIndex()]);
+  protected readonly projects: Project[] = [
+    { category: 'Marca personal', title: 'Aníbal Rey de Corazones', image: 'assets/images/anibal.png', url: 'https://anibalreydecorazones.com/' },
+    { category: 'Evento industrial', title: 'Jornada Industrial', image: 'assets/images/jornada-industrial.png', url: 'https://jornadaindustrialcocle.utp.ac.pa/' },
+    { category: 'Tienda online', title: 'La Casa del Jean', image: 'assets/images/casa-jean-capture.png', url: 'https://lacasadeljean.free.nf/?i=1' },
+    { category: 'Portafolio personal', title: 'Kevin Mena', image: 'assets/images/portfolio-kevin.png', url: 'https://kevinmena.me/' },
+  ];
 
-  constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
-  ngAfterViewInit(): void { this.updateNav(); this.initScrollReveal(); this.initCounters(); this.preloadProjectImages(); }
-  @HostListener('window:scroll') protected updateNav(): void {
-    this.isScrolled.set(window.scrollY > 24);
-  }
-  protected content(): Content { return this.copy[this.language()]; }
-  protected finishCurtainOpening(): void { this.curtainOpen.set(true); this.navVisible.set(true); }
-  protected toggleLanguage(): void {
-    this.language.update((value) => value === 'es' ? 'en' : 'es');
-    this.activeService.set(-1);
-    setTimeout(() => this.initScrollReveal());
-  }
-  protected toggleService(index: number): void { this.activeService.set(this.activeService() === index ? -1 : index); }
-  protected openContact(plan?: string): void {
-    this.selectedPlan.set(plan ?? '');
-    this.goToSection('contacto');
+  protected readonly steps: Step[] = [
+    { number: '01', title: 'Conocemos tu negocio', text: 'Entendemos lo que vendes, a quién quieres atraer y qué debe pasar después de una visita.' },
+    { number: '02', title: 'Diseñamos la experiencia', text: 'Ordenamos el mensaje y creamos una dirección visual que se sienta propia de tu marca.' },
+    { number: '03', title: 'Desarrollamos tu web', text: 'Construimos una experiencia rápida, clara y pensada para funcionar igual de bien en celular.' },
+    { number: '04', title: 'Lanzamos y mejoramos', text: 'Publicamos, revisamos los detalles y te acompañamos para que la web siga moviendo tu negocio.' },
+  ];
+
+  ngOnInit(): void {
+    this.updateNavState();
   }
 
-  protected goToSection(sectionId: string): void {
-    if (sectionId === 'top') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      history.replaceState(null, '', '#top');
-      return;
-    }
+  @HostListener('window:scroll')
+  protected onWindowScroll(): void {
+    this.updateNavState();
+  }
 
+  protected toggleMobileMenu(): void {
+    this.mobileMenuOpen.update((open) => !open);
+  }
+
+  private updateNavState(): void {
+    this.hasScrolled.set(window.scrollY > 570);
+  }
+
+  protected goTo(sectionId: string): void {
+    this.mobileMenuOpen.set(false);
     const section = document.getElementById(sectionId);
     if (!section) return;
-
-    const target = section.querySelector<HTMLElement>('.section-heading, h2') ?? section;
-    const targetTop = target.getBoundingClientRect().top + window.scrollY;
-    const position = targetTop - (window.innerHeight - target.offsetHeight) / 2;
-    window.scrollTo({ top: Math.max(0, position), behavior: 'smooth' });
-    history.replaceState(null, '', `#${sectionId}`);
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   protected async sendEmail(form: HTMLFormElement, name: string, email: string, business: string, message: string): Promise<void> {
@@ -139,80 +79,16 @@ export class App implements AfterViewInit {
             reply_to: email,
             business_name: business,
             message,
-            selected_plan: this.selectedPlan() || 'No seleccionado',
             to_email: 'kjmg2325@gmail.com',
           },
         }),
       });
+
       if (!response.ok) throw new Error('EmailJS request failed');
       form.reset();
-      this.selectedPlan.set('');
       this.emailStatus.set('success');
     } catch {
       this.emailStatus.set('error');
     }
-  }
-  protected moveProjects(direction: number): void {
-    if (this.isProjectChanging() || this.projectSwitchPending) return;
-    const total = this.content().projects.length;
-    const nextIndex = (this.activeProjectIndex() + direction + total) % total;
-    this.projectSwitchPending = true;
-    this.loadProjectImage(this.content().projects[nextIndex].image).then(() => {
-      this.isProjectChanging.set(true);
-      window.setTimeout(() => {
-        this.activeProjectIndex.set(nextIndex);
-        this.isProjectChanging.set(false);
-        this.projectSwitchPending = false;
-      }, 150);
-    });
-  }
-  protected startProjectSwipe(event: TouchEvent): void {
-    this.projectTouchStartX = event.touches[0]?.clientX ?? 0;
-  }
-  protected finishProjectSwipe(event: TouchEvent): void {
-    const endX = event.changedTouches[0]?.clientX ?? this.projectTouchStartX;
-    const distance = endX - this.projectTouchStartX;
-    if (Math.abs(distance) >= 42) {
-      this.projectWasSwiped = true;
-      this.moveProjects(distance < 0 ? 1 : -1);
-      window.setTimeout(() => this.projectWasSwiped = false, 350);
-    }
-  }
-  protected preventProjectOpen(event: MouseEvent): void {
-    if (this.projectWasSwiped) event.preventDefault();
-  }
-  private preloadProjectImages(): void {
-    this.content().projects.forEach((project) => void this.loadProjectImage(project.image));
-  }
-  private loadProjectImage(source: string): Promise<void> {
-    const cached = this.projectImageLoads.get(source);
-    if (cached) return cached;
-    const image = new Image();
-    const load = new Promise<void>((resolve) => {
-      image.addEventListener('load', () => resolve(), { once: true });
-      image.addEventListener('error', () => resolve(), { once: true });
-      image.src = source;
-      if (image.complete) resolve();
-    });
-    this.projectImageLoads.set(source, load);
-    return load;
-  }
-  private initScrollReveal(): void {
-    const items = this.elementRef.nativeElement.querySelectorAll('.reveal');
-    if (typeof IntersectionObserver === 'undefined') { items.forEach((item) => item.classList.add('is-visible')); return; }
-    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }), { threshold: 0.16, rootMargin: '0px 0px -80px 0px' });
-    items.forEach((item, index) => { (item as HTMLElement).style.setProperty('--delay', `${Math.min(index % 6, 5) * 85}ms`); observer.observe(item); });
-  }
-  private initCounters(): void {
-    const statsBlock = this.elementRef.nativeElement.querySelector('[data-stats]');
-    if (!statsBlock) return;
-    if (typeof IntersectionObserver === 'undefined') { setTimeout(() => this.stats.forEach((stat) => { stat.current = stat.value; stat.animated = true; })); return; }
-    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { this.stats.forEach((_, index) => this.animateStat(index)); observer.disconnect(); } }, { threshold: 0.35 });
-    observer.observe(statsBlock);
-  }
-  private animateStat(index: number): void {
-    const stat = this.stats[index]; if (stat.animated) return; stat.animated = true; const start = performance.now();
-    const tick = (now: number) => { const progress = Math.min((now - start) / 1400, 1); stat.current = Math.round(stat.value * (1 - Math.pow(1 - progress, 3))); if (progress < 1) requestAnimationFrame(tick); else stat.current = stat.value; };
-    requestAnimationFrame(tick);
   }
 }

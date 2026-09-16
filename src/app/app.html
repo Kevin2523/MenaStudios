@@ -1,63 +1,107 @@
-<div class="global-curtain curtain curtain-left" aria-hidden="true"></div>
-<div class="global-curtain curtain curtain-right" aria-hidden="true"></div>
+<header class="site-header" [class.is-scrolled]="hasScrolled()">
+  <nav class="site-nav" aria-label="Navegación principal">
+    <button type="button" class="brand-button" aria-label="Ir al inicio" (click)="goTo('inicio')">
+      <img src="assets/logo/option-2-ribbon.svg" alt="Mena Studios" />
+    </button>
 
-<nav class="site-nav" [class.nav-scrolled]="isScrolled()" [class.nav-visible]="navVisible()">
-  <a class="brand-lockup" href="#top" aria-label="Mena Studios inicio" (click)="$event.preventDefault(); goToSection('top')"><img src="assets/logo/option-2-ribbon.svg" alt="Mena Studios" /></a>
-  <div class="nav-links">
-    <a href="#trabajo" (click)="$event.preventDefault(); goToSection('trabajo')">{{ content().nav[0] }}</a><a href="#servicios" (click)="$event.preventDefault(); goToSection('servicios')">{{ content().nav[1] }}</a><a href="#proceso" (click)="$event.preventDefault(); goToSection('proceso')">{{ content().nav[2] }}</a><a href="#planes" (click)="$event.preventDefault(); goToSection('planes')">{{ content().nav[3] }}</a>
-  </div>
-  <div class="nav-actions"><button type="button" class="language-toggle" (click)="toggleLanguage()" [attr.aria-label]="'Cambiar idioma a ' + content().switch">{{ content().switch }}</button><a class="nav-cta" href="#contacto" (click)="$event.preventDefault(); goToSection('contacto')">{{ content().contact }}</a></div>
-</nav>
+    <button type="button" class="menu-toggle" [class.is-open]="mobileMenuOpen()" [attr.aria-expanded]="mobileMenuOpen()" aria-label="Abrir menú" (click)="toggleMobileMenu()">
+      <span></span><span></span><span></span>
+    </button>
 
-<main id="top">
-  <section class="hero"><div class="hero-sticky">
-    <h1 class="visually-hidden">Desarrollo web para negocios que quieren vender mejor</h1>
-    <div class="stage-mark" aria-label="Mena Studios"><img class="hero-logo" src="assets/logo/option-2-ribbon.svg" alt="Mena Studios" /><p class="hero-copy">{{ content().hero }}</p></div>
-    <div class="hero-actions"><button type="button" class="btn btn-primary" (click)="openContact()">{{ content().idea }}</button><a class="btn btn-secondary" href="#trabajo" (click)="$event.preventDefault(); goToSection('trabajo')">{{ content().viewProjects }}</a></div>
-  </div></section>
+    <div class="nav-panel" [class.is-open]="mobileMenuOpen()">
+      <div class="nav-links">
+        <button type="button" (click)="goTo('inicio')">Inicio</button>
+        <button type="button" (click)="goTo('servicios')">Servicios</button>
+        <button type="button" (click)="goTo('proyectos')">Proyectos</button>
+        <button type="button" (click)="goTo('proceso')">Proceso</button>
+        <button type="button" (click)="goTo('contacto')">Contacto</button>
+      </div>
+      <button type="button" class="button button-red nav-cta" (click)="goTo('contacto')">Hablemos <span aria-hidden="true">↗</span></button>
+    </div>
+  </nav>
+</header>
 
-  <section id="trabajo" class="section work">
-    <div class="section-heading reveal"><span class="section-number">01</span><h2>{{ content().work }}</h2></div>
-    <div class="project-carousel reveal" [attr.aria-label]="content().nav[0]"><a class="project-card" [class.is-changing]="isProjectChanging()" [href]="activeProject().url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="content().viewProject + ' ' + activeProject().title" (touchstart)="startProjectSwipe($event)" (touchend)="finishProjectSwipe($event)" (click)="preventProjectOpen($event)"><div class="project-thumb"><img [src]="activeProject().image" [alt]="activeProject().title" /><div class="project-info"><span class="project-label">MenaStudios</span><div class="project-topline"><span class="project-number">0{{ activeProjectIndex() + 1 }} / 0{{ content().projects.length }}</span></div><div class="project-copy"><h3 class="project-title">{{ activeProject().title }}</h3><p class="project-category">{{ activeProject().category }}</p></div><span class="project-arrow" aria-hidden="true">↗</span></div></div></a><aside class="project-desktop-panel" aria-live="polite"><div class="project-panel-head"><span class="project-panel-brand">MenaStudios</span><span class="project-number">0{{ activeProjectIndex() + 1 }} / 0{{ content().projects.length }}</span></div><div class="project-panel-content"><p class="project-category">{{ activeProject().category }}</p><h3>{{ activeProject().title }}</h3><p class="project-panel-copy">{{ activeProject().description }}</p><a class="project-panel-link" [href]="activeProject().url" target="_blank" rel="noopener noreferrer">{{ content().viewProjects }} <span aria-hidden="true">↗</span></a></div><div class="carousel-controls"><button type="button" class="carousel-control" [attr.aria-label]="content().previousProject" (click)="moveProjects(-1)">&larr;</button><button type="button" class="carousel-control" [attr.aria-label]="content().nextProject" (click)="moveProjects(1)">&rarr;</button></div></aside></div>
+<main>
+  <section id="inicio" class="hero">
+    <div class="hero-media"><img src="assets/images/hero-business-owner.png" alt="Emprendedora trabajando en su negocio" /></div>
+    <div class="hero-shade"></div>
+    <div class="hero-content page-shell">
+      <h1>
+        <span class="desktop-title">Desarrollo web<br />para negocios que<br />quieren <em>vender mejor.</em></span>
+        <span class="mobile-title">Desarrollo web<br />para negocios<br />que quieren<br /><em>vender mejor.</em></span>
+      </h1>
+      <p class="hero-copy">Diseñamos experiencias digitales claras, profesionales y pensadas para convertir visitas en clientes.</p>
+      <div class="hero-actions">
+        <button type="button" class="button button-red" (click)="goTo('contacto')">Hablemos de tu proyecto <span aria-hidden="true">↗</span></button>
+        <button type="button" class="button button-ghost" (click)="goTo('proyectos')">Ver proyectos <span aria-hidden="true">↓</span></button>
+      </div>
+    </div>
   </section>
 
-  <section id="servicios" class="section services">
-    <div class="section-heading reveal"><span class="section-number">02</span><h2>{{ content().servicesHeading }}</h2></div><div class="accordion reveal">
-      @for (service of content().services; track $index; let i = $index) {
-        <button type="button" class="service-row" [class.open]="activeService() === i" [attr.aria-expanded]="activeService() === i" (click)="toggleService(i)"><span class="service-index">{{ (i + 1).toString().padStart(2, '0') }}</span><span class="service-title">{{ service.title }}</span><span class="service-mark">+</span><span class="service-panel">{{ service.text }}</span></button>
+  <section id="servicios" class="service-strip" aria-label="Servicios principales">
+    <div class="page-shell service-strip-grid">
+      <button type="button" (click)="goTo('contacto')"><span class="strip-icon screen" aria-hidden="true"></span><strong>Diseño web</strong><small>Una web que genera confianza.</small></button>
+      <button type="button" (click)="goTo('contacto')"><span class="strip-icon code" aria-hidden="true">&lt;/&gt;</span><strong>Desarrollo a medida</strong><small>Soluciones para tu operación.</small></button>
+      <button type="button" (click)="goTo('contacto')"><span class="strip-icon cart" aria-hidden="true"></span><strong>Tiendas online</strong><small>Vende fácil desde tu web.</small></button>
+      <button type="button" (click)="goTo('contacto')"><span class="strip-icon chart" aria-hidden="true"></span><strong>SEO</strong><small>Que te encuentren primero.</small></button>
+      <button type="button" (click)="goTo('contacto')"><span class="strip-icon gear" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-2 2-.06-.06A1.65 1.65 0 0 0 15.91 18a1.65 1.65 0 0 0-1 1.51V19.6h-2.82v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06-2-2 .06-.06A1.65 1.65 0 0 0 6 14.51a1.65 1.65 0 0 0-1.51-1H4.4v-2.82h.09A1.65 1.65 0 0 0 6 9.18a1.65 1.65 0 0 0-.33-1.82l-.06-.06 2-2 .06.06A1.65 1.65 0 0 0 9.49 6a1.65 1.65 0 0 0 1-1.51V4.4h2.82v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06 2 2-.06.06A1.65 1.65 0 0 0 18 9.49a1.65 1.65 0 0 0 1.51 1h.09v2.82h-.09A1.65 1.65 0 0 0 18 14.82c0 .06.01.12.02.18"></path></svg></span><strong>Mantenimiento</strong><small>Tu sitio siempre al día.</small></button>
+    </div>
+  </section>
+
+  <section id="proyectos" class="projects-section">
+    <div class="page-shell">
+      <div class="project-showcase">
+        <div class="project-heading">
+          <p class="eyebrow"><span></span> Proyectos</p>
+          <h2>Ideas que<br />se convierten<br />en <em>resultados.</em></h2>
+        </div>
+        <div class="project-grid">
+        @for (project of projects; track project.title) {
+          <article class="project-card">
+            <div class="project-image"><img [src]="project.image" [alt]="'Proyecto de ' + project.category" /></div>
+            <div class="project-meta"><p>{{ project.category }}</p><h3>{{ project.title }}</h3></div>
+            <a class="project-link" [href]="project.url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="'Abrir ' + project.title">→</a>
+          </article>
+        }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="proceso" class="process-section">
+    <div class="process-hero"><img src="assets/images/process-collaboration.png" alt="Colaboración en el diseño de un sitio web" /><div class="process-shade"></div><div class="page-shell process-hero-content"><p class="eyebrow eyebrow-light"><span></span> Proceso</p><h2>Una web clara empieza<br />con un <em>buen proceso.</em></h2><p>Trabajamos contigo para transformar tus ideas en una presencia digital útil y propia.</p></div></div>
+    <div class="cream-section process-steps-wrap"><div class="page-shell process-steps">
+      @for (step of steps; track step.number) {
+        <article class="step-card"><span>{{ step.number }}</span><h3>{{ step.title }}</h3><p>{{ step.text }}</p></article>
       }
-    </div>
+    </div><div class="process-action"><button type="button" class="button button-red" (click)="goTo('contacto')">Hablemos de tu proyecto <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16" fill="none"><path d="M3 13 13 3M6 3h7v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button></div></div>
   </section>
 
-  <section id="proceso" class="section process-section">
-    <div class="section-heading reveal"><span class="section-number">03</span><h2>{{ content().processHeading }}</h2></div><div class="process-grid">
-      @for (step of content().process; track $index; let i = $index) { <article class="process-card reveal"><span>{{ (i + 1).toString().padStart(2, '0') }}</span><h3>{{ step[0] }}</h3><p>{{ step[1] }}</p></article> }
+  <section id="contacto" class="contact-section dark-section">
+    <div class="contact-photo"><img src="assets/images/contact-entrepreneur-new.png" alt="Emprendedora lista para atender a sus clientes" /></div>
+    <div class="page-shell contact-layout">
+      <div class="contact-content">
+        <h2>Hablemos de<br /><em>tu próximo proyecto.</em></h2>
+        <p>Cuéntanos qué necesita tu negocio y te responderemos pronto.</p>
+        <form class="contact-form" #contactForm (submit)="$event.preventDefault(); sendEmail(contactForm, contactName.value, contactEmail.value, '', contactMessage.value)">
+          <label><span class="sr-only">Nombre</span><input #contactName type="text" name="name" required placeholder="Nombre" /></label>
+          <label><span class="sr-only">Correo</span><input #contactEmail type="email" name="email" required placeholder="Correo" /></label>
+          <label><span class="sr-only">¿Qué necesita tu negocio?</span><textarea #contactMessage name="message" required rows="4" placeholder="¿Qué necesita tu negocio?"></textarea></label>
+          <button type="submit" class="button button-red" [disabled]="emailStatus() === 'sending'">{{ emailStatus() === 'sending' ? 'Enviando...' : 'Enviar mensaje' }}</button>
+          @if (emailStatus() === 'success') { <p class="form-status form-success">Tu mensaje fue enviado. Kevin te responderá pronto.</p> }
+          @if (emailStatus() === 'error') { <p class="form-status form-error">No se pudo enviar el mensaje. Inténtalo otra vez o escríbenos por WhatsApp.</p> }
+        </form>
+      </div>
     </div>
-  </section>
-
-  <section class="section about"><div class="about-quote reveal"><span class="section-number">04</span><blockquote>{{ content().quote }}</blockquote><p>{{ content().quoteBy }}</p></div><div class="stats" data-stats>
-    @for (stat of stats; track $index; let i = $index) { <div class="stat-card reveal"><strong>{{ stat.current }}{{ stat.suffix }}</strong><span>{{ content().stats[i] }}</span></div> }
-  </div></section>
-
-  <section id="planes" class="section plans"><div class="section-heading reveal"><span class="section-number">05</span><h2>{{ content().plansHeading }}</h2></div><div class="plans-grid">
-    @for (plan of content().plans; track $index) { <article class="plan-card reveal"><h3>{{ plan[0] }}</h3><p>{{ plan[1] }}</p><button type="button" (click)="openContact(plan[0])" [attr.aria-label]="content().planLabel + ' ' + plan[0]">{{ content().planButton }}</button></article> }
-  </div></section>
-
-  <section class="section faq"><div class="section-heading reveal"><span class="section-number">06</span><h2>{{ content().faqHeading }}</h2></div><div class="faq-list">
-    @for (faq of content().faqs; track $index) { <article class="faq-item reveal"><h3>{{ faq[0] }}</h3><p>{{ faq[1] }}</p></article> }
-  </div></section>
-
-  <section id="contacto" class="contact"><span class="section-number reveal">07</span><h2 class="reveal">{{ content().contactHeading }}</h2>
-    <form #contactForm class="contact-form reveal" (submit)="$event.preventDefault(); sendEmail(contactForm, name.value, email.value, business.value, message.value)">
-      <input #name type="text" required [placeholder]="content().formName" [attr.aria-label]="content().formName" />
-      <input #email type="email" required [placeholder]="content().formEmail" [attr.aria-label]="content().formEmail" />
-      <input #business type="text" required [placeholder]="content().formBusiness" [attr.aria-label]="content().formBusiness" />
-      @if (selectedPlan()) { <p class="selected-plan">{{ content().formPlan }}: {{ selectedPlan() }}</p> }
-      <textarea #message required rows="5" [placeholder]="content().formMessage" [attr.aria-label]="content().formMessage"></textarea>
-      <button type="submit" [disabled]="emailStatus() === 'sending'">{{ emailStatus() === 'sending' ? content().formSending : content().formSend }}</button>
-      @if (emailStatus() === 'success') { <p class="form-status" role="status">{{ content().formSuccess }}</p> }
-      @if (emailStatus() === 'error') { <p class="form-status form-status-error" role="alert">{{ content().formError }}</p> }
-    </form>
-    <div class="contact-actions reveal"><a href="mailto:kjmg2325&#64;gmail.com">kjmg2325&#64;gmail.com</a><a href="tel:+50760326810">+507 6032-6810</a><span>{{ content().city }}</span></div>
+    <div class="contact-location"><strong><span aria-hidden="true"></span>Panamá</strong><i></i><small>menastudios.tech</small></div>
   </section>
 </main>
+
+<footer class="site-footer">
+  <div class="page-shell footer-grid">
+    <div><img class="footer-logo" src="assets/logo/option-2-ribbon.svg" alt="Mena Studios" /><p>Webs claras para negocios que quieren crecer.</p></div>
+    <div class="footer-links"><button type="button" (click)="goTo('servicios')">Servicios</button><button type="button" (click)="goTo('proyectos')">Proyectos</button><button type="button" (click)="goTo('proceso')">Proceso</button><button type="button" (click)="goTo('contacto')">Contacto</button></div>
+    <div class="footer-contact"><a href="mailto:kjmg2325@gmail.com">kjmg2325@gmail.com</a><a href="https://wa.me/50760326810" target="_blank" rel="noopener noreferrer">+507 6032-6810</a><span>Panamá</span></div>
+  </div>
+  <div class="page-shell footer-bottom">© 2026 Mena Studios. Todos los derechos reservados.</div>
+</footer>
